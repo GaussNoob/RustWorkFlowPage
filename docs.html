@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>RustWorkflow — Documentação</title>
+    <link rel="icon" href="logo.png">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        :root {
+            --bg: #050507;
+            --bg2: #0c0c10;
+            --bg3: #131319;
+            --bg4: #1a1a22;
+            --brd: #1e1e28;
+            --brd2: #2e2e3d;
+            --t: #ededf4;
+            --t2: #8d8da3;
+            --t3: #55556a;
+            --v: #8b5cf6;
+            --b: #3b82f6;
+            --c: #22d3ee;
+            --e: #10b981;
+            --a: #f59e0b;
+            --r: #f43f5e;
+            --rust: #e07040
+        }
+
+        html {
+            scroll-behavior: smooth
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--t);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: 100vh
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            background: var(--bg2);
+            border-right: 1px solid var(--brd);
+            padding: 20px 0;
+            z-index: 10
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 4px
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--brd2);
+            border-radius: 4px
+        }
+
+        .main {
+            padding: 48px 56px 100px;
+            max-width: 900px;
+            overflow-x: hidden
+        }
+
+        .sb-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--brd);
+            margin-bottom: 16px;
+            text-decoration: none;
+            color: var(--t)
+        }
+
+        .sb-brand img {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            filter: drop-shadow(0 0 4px rgba(139, 92, 246, 0.3))
+        }
+
+        .sb-brand span {
+            font-weight: 800;
+            font-size: 15px;
+            letter-spacing: -0.3px
+        }
+
+        .sb-brand .rr {
+            color: var(--rust)
+        }
+
+        .sb-section {
+            padding: 0 12px;
+            margin-bottom: 4px
+        }
+
+        .sb-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--t3);
+            padding: 12px 8px 6px;
+            font-family: 'JetBrains Mono', monospace
+        }
+
+        .sb-link {
+            display: block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--t2);
+            text-decoration: none;
+            transition: all .15s;
+            font-weight: 500
+        }
+
+        .sb-link:hover {
+            background: rgba(139, 92, 246, .06);
+            color: var(--t)
+        }
+
+        .sb-link.active {
+            background: rgba(139, 92, 246, .1);
+            color: var(--v);
+            font-weight: 600
+        }
+
+        .sb-back {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            margin: 0 12px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            color: var(--t2);
+            text-decoration: none;
+            transition: all .15s;
+            font-weight: 500
+        }
+
+        .sb-back:hover {
+            background: rgba(255, 255, 255, .04);
+            color: var(--t)
+        }
+
+        .sb-back svg {
+            width: 14px;
+            height: 14px
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            margin-bottom: 8px;
+            line-height: 1.2
+        }
+
+        h1 .glow {
+            background: linear-gradient(135deg, var(--rust), var(--v), var(--c));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .subtitle {
+            font-size: 15px;
+            color: var(--t2);
+            margin-bottom: 40px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--brd)
+        }
+
+        h2 {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin: 48px 0 16px;
+            padding-top: 20px;
+            border-top: 1px solid var(--brd);
+            color: var(--t)
+        }
+
+        h2:first-of-type {
+            margin-top: 0;
+            border-top: none;
+            padding-top: 0
+        }
+
+        h2 .tag {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            vertical-align: middle;
+            margin-left: 8px;
+            font-family: 'JetBrains Mono', monospace
+        }
+
+        h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 28px 0 10px;
+            color: var(--t)
+        }
+
+        h4 {
+            font-size: 13px;
+            font-weight: 700;
+            margin: 20px 0 8px;
+            color: var(--t2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: 'JetBrains Mono', monospace
+        }
+
+        p {
+            font-size: 14px;
+            color: var(--t2);
+            margin-bottom: 14px
+        }
+
+        a {
+            color: var(--v);
+            text-decoration: none
+        }
+
+        a:hover {
+            text-decoration: underline
+        }
+
+        strong {
+            color: var(--t);
+            font-weight: 600
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            background: rgba(139, 92, 246, .08);
+            color: var(--v);
+            padding: 2px 6px;
+            border-radius: 4px
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0 24px;
+            font-size: 13px
+        }
+
+        th {
+            text-align: left;
+            padding: 10px 14px;
+            background: var(--bg3);
+            border: 1px solid var(--brd);
+            color: var(--t);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .5px
+        }
+
+        td {
+            padding: 10px 14px;
+            border: 1px solid var(--brd);
+            color: var(--t2)
+        }
+
+        tr:hover td {
+            background: rgba(139, 92, 246, .02)
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 16px 0 24px
+        }
+
+        .info-card {
+            background: var(--bg3);
+            border: 1px solid var(--brd);
+            border-radius: 10px;
+            padding: 18px
+        }
+
+        .info-card h5 {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px
+        }
+
+        .info-card h5 svg {
+            width: 14px;
+            height: 14px
+        }
+
+        .info-card p {
+            font-size: 12px;
+            margin: 0;
+            color: var(--t2)
+        }
+
+        .callout {
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin: 16px 0 20px;
+            font-size: 13px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px
+        }
+
+        .callout svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+            margin-top: 2px
+        }
+
+        .callout-v {
+            background: rgba(139, 92, 246, .06);
+            border: 1px solid rgba(139, 92, 246, .12);
+            color: var(--v)
+        }
+
+        .callout-rust {
+            background: rgba(224, 112, 64, .06);
+            border: 1px solid rgba(224, 112, 64, .12);
+            color: var(--rust)
+        }
+
+        .callout-e {
+            background: rgba(16, 185, 129, .06);
+            border: 1px solid rgba(16, 185, 129, .12);
+            color: var(--e)
+        }
+
+        .callout-a {
+            background: rgba(245, 158, 11, .06);
+            border: 1px solid rgba(245, 158, 11, .12);
+            color: var(--a)
+        }
+
+        .node-cat {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 5px;
+            font-size: 10px;
+            font-weight: 700;
+            margin-right: 4px;
+            margin-bottom: 4px;
+            font-family: 'JetBrains Mono', monospace
+        }
+
+        .nc-green {
+            background: rgba(16, 185, 129, .08);
+            border: 1px solid rgba(16, 185, 129, .12);
+            color: #6ee7b7
+        }
+
+        .nc-blue {
+            background: rgba(59, 130, 246, .08);
+            border: 1px solid rgba(59, 130, 246, .12);
+            color: #93c5fd
+        }
+
+        .nc-amber {
+            background: rgba(245, 158, 11, .08);
+            border: 1px solid rgba(245, 158, 11, .12);
+            color: #fcd34d
+        }
+
+        .nc-violet {
+            background: rgba(139, 92, 246, .08);
+            border: 1px solid rgba(139, 92, 246, .12);
+            color: #c4b5fd
+        }
+
+        .nc-gray {
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .06);
+            color: var(--t2)
+        }
+
+        .ver-badge {
+            display: inline-flex;
+            padding: 3px 10px;
+            border-radius: 5px;
+            font-size: 10px;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(139, 92, 246, .08);
+            border: 1px solid rgba(139, 92, 246, .12);
+            color: var(--v)
+        }
+
+        .steps {
+            counter-reset: step;
+            list-style: none;
+            padding: 0;
+            margin: 16px 0 24px
+        }
+
+        .steps li {
+            counter-increment: step;
+            position: relative;
+            padding: 12px 16px 12px 50px;
+            background: var(--bg3);
+            border: 1px solid var(--brd);
+            border-radius: 8px;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: var(--t2)
+        }
+
+        .steps li::before {
+            content: counter(step);
+            position: absolute;
+            left: 16px;
+            top: 12px;
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            background: rgba(139, 92, 246, .1);
+            color: var(--v);
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace
+        }
+
+        .shortcut {
+            display: inline-flex;
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg3);
+            border: 1px solid var(--brd);
+            color: var(--t2)
+        }
+
+        ul,
+        ol {
+            padding-left: 20px;
+            margin: 10px 0 18px
+        }
+
+        li {
+            font-size: 13px;
+            color: var(--t2);
+            margin-bottom: 6px
+        }
+
+        li code {
+            font-size: 11px
+        }
+
+        @media(max-width:800px) {
+            .layout {
+                grid-template-columns: 1fr
+            }
+
+            .sidebar {
+                display: none
+            }
+
+            .main {
+                padding: 24px 18px 60px
+            }
+
+            h1 {
+                font-size: 26px
+            }
+
+            .card-grid {
+                grid-template-columns: 1fr
+            }
+
+            table {
+                font-size: 11px
+            }
+
+            th,
+            td {
+                padding: 8px 10px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <a href="index.html" class="sb-back">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 18 9 12 15 6" />
+                </svg>
+                ← Voltar ao site
+            </a>
+            <a href="index.html" class="sb-brand"><img src="logo.png" alt=""><span><span
+                        class="rr">Rust</span>Workflow</span></a>
+            <div class="sb-section">
+                <div class="sb-label">Início</div>
+                <a href="#intro" class="sb-link active">O que é</a>
+                <a href="#instalacao" class="sb-link">Instalação</a>
+                <a href="#primeiros-passos" class="sb-link">Primeiros Passos</a>
+            </div>
+            <div class="sb-section">
+                <div class="sb-label">Interface</div>
+                <a href="#canvas" class="sb-link">Canvas & Editor</a>
+                <a href="#paineis" class="sb-link">Painéis</a>
+                <a href="#atalhos" class="sb-link">Atalhos</a>
+            </div>
+            <div class="sb-section">
+                <div class="sb-label">Nós</div>
+                <a href="#catalogo" class="sb-link">Catálogo (33 tipos)</a>
+                <a href="#variaveis" class="sb-link">Variáveis</a>
+                <a href="#condicoes" class="sb-link">Condições & Loops</a>
+            </div>
+            <div class="sb-section">
+                <div class="sb-label">Recursos</div>
+                <a href="#ia" class="sb-link">IA & Ollama</a>
+                <a href="#http" class="sb-link">HTTP & APIs</a>
+                <a href="#db" class="sb-link">Banco de Dados</a>
+                <a href="#codigo" class="sb-link">Código Custom</a>
+            </div>
+            <div class="sb-section">
+                <div class="sb-label">Mais</div>
+                <a href="#idiomas" class="sb-link">Idiomas</a>
+                <a href="#salvar" class="sb-link">Salvar & Carregar</a>
+                <a href="#faq" class="sb-link">FAQ</a>
+            </div>
+        </aside>
+
+        <main class="main">
+            <h1>Documentação <span class="glow">RustWorkflow</span></h1>
+            <p class="subtitle">Guia completo de uso do editor visual de automação com IA, motor nativo Rust e 33 tipos
+                de nós. <span class="ver-badge">v1.0.0</span></p>
+
+            <!-- O que é -->
+            <h2 id="intro">O que é o RustWorkflow?</h2>
+            <p><strong>RustWorkflow</strong> é um editor visual de automação baseado em nós (node-based). Você cria
+                fluxos arrastando blocos no canvas, conecta-os com linhas, e executa tudo com um clique.</p>
+            <div class="card-grid">
+                <div class="info-card">
+                    <h5 style="color:var(--v)"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2">
+                            <path
+                                d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                        </svg> IA Integrada</h5>
+                    <p>Chat com LLMs locais (Ollama) ou cloud (OpenAI, Anthropic) diretamente no fluxo.</p>
+                </div>
+                <div class="info-card">
+                    <h5 style="color:var(--rust)"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4" />
+                            <circle cx="12" cy="12" r="4" />
+                        </svg> Motor Rust</h5>
+                    <p>Engine nativo em Rust para tarefas de alta performance (HTTP, arquivos).</p>
+                </div>
+                <div class="info-card">
+                    <h5 style="color:var(--c)"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="2" y1="12" x2="22" y2="12" />
+                            <path
+                                d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                        </svg> REST & SQL</h5>
+                    <p>Faça chamadas HTTP, conecte a MySQL e PostgreSQL, tudo visualmente.</p>
+                </div>
+                <div class="info-card">
+                    <h5 style="color:var(--e)"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="16 18 22 12 16 6" />
+                            <polyline points="8 6 2 12 8 18" />
+                        </svg> Código Custom</h5>
+                    <p>Execute JavaScript ou Rust customizado quando os nós padrão não bastam.</p>
+                </div>
+            </div>
+
+            <!-- Instalação -->
+            <h2 id="instalacao">Instalação</h2>
+            <h3>Linux</h3>
+            <p>Baixe o arquivo <strong>.AppImage</strong> na <a href="index.html#download">página de download</a>.
+                Depois, torne-o executável e abra:</p>
+            <ol class="steps">
+                <li>Baixe o arquivo <code>RustWorkflow-1.0.0.AppImage</code></li>
+                <li>Clique com botão direito → Propriedades → Permissões → marque "Executável"</li>
+                <li>Dê duplo-clique para abrir, ou execute via terminal: <code>./RustWorkflow-1.0.0.AppImage</code></li>
+            </ol>
+
+            <h3>Windows</h3>
+            <div class="callout callout-a">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                <span>O instalador para Windows estará disponível em breve. Fique atento às atualizações.</span>
+            </div>
+
+            <h3>Requisitos</h3>
+            <ul>
+                <li><strong>Ollama</strong> (opcional) — Para usar IA local, instale o <a href="https://ollama.com"
+                        target="_blank">Ollama</a> e baixe um modelo (ex: <code>ollama pull llama3</code>)</li>
+                <li><strong>Rust</strong> (opcional) — Apenas se quiser executar nós de código Rust customizado</li>
+            </ul>
+
+            <!-- Primeiros Passos -->
+            <h2 id="primeiros-passos">Primeiros Passos</h2>
+            <p>Crie seu primeiro fluxo em menos de um minuto:</p>
+            <ol class="steps">
+                <li>Abra o RustWorkflow e veja o <strong>canvas</strong> vazio</li>
+                <li>Na <strong>Sidebar</strong> (esquerda), encontre o nó <strong>Start</strong> e arraste para o canvas
+                </li>
+                <li>Arraste um nó <strong>Debug Log</strong> para o lado direito do Start</li>
+                <li><strong>Conecte-os:</strong> clique no ponto de saída do Start e arraste até a entrada do Debug Log
+                </li>
+                <li>Clique no Debug Log para abrir o <strong>Painel de Propriedades</strong> (direita) e escreva uma
+                    mensagem</li>
+                <li>Clique em <strong>▶ Executar</strong> na barra superior</li>
+                <li>Veja o resultado no <strong>Painel de Logs</strong> (inferior)</li>
+            </ol>
+
+            <div class="callout callout-e">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                <span>Pronto! Esse é o fluxo básico: arraste nós, conecte, configure e execute.</span>
+            </div>
+
+            <!-- Canvas & Editor -->
+            <h2 id="canvas">Canvas & Editor</h2>
+            <p>O canvas é a área central onde você monta seus fluxos. Recursos:</p>
+            <ul>
+                <li><strong>Arrastar e soltar</strong> — Arraste nós da Sidebar para o canvas</li>
+                <li><strong>Zoom</strong> — Use a roda do mouse ou pinch para aproximar/afastar</li>
+                <li><strong>Pan</strong> — Clique e arraste o fundo para mover a visualização</li>
+                <li><strong>Conectar nós</strong> — Clique no handle de saída (direita) e arraste até o handle de
+                    entrada (esquerda) de outro nó</li>
+                <li><strong>Selecionar</strong> — Clique em um nó para ver suas propriedades</li>
+                <li><strong>Deletar</strong> — Selecione um nó ou conexão e pressione <span
+                        class="shortcut">Delete</span></li>
+                <li><strong>Minimap</strong> — Toggle do minimapa para visão geral do fluxo</li>
+            </ul>
+
+            <h3>Barra de Ferramentas</h3>
+            <table>
+                <tr>
+                    <th>Botão</th>
+                    <th>Ação</th>
+                </tr>
+                <tr>
+                    <td><strong>▶ Executar</strong></td>
+                    <td>Roda o workflow do nó Start até o final</td>
+                </tr>
+                <tr>
+                    <td><strong>💾 Salvar</strong></td>
+                    <td>Salva o workflow atual como arquivo</td>
+                </tr>
+                <tr>
+                    <td><strong>📂 Carregar</strong></td>
+                    <td>Abre um workflow salvo anteriormente</td>
+                </tr>
+                <tr>
+                    <td><strong>🗑 Limpar</strong></td>
+                    <td>Remove todos os nós e conexões do canvas</td>
+                </tr>
+                <tr>
+                    <td><strong>↩ Desfazer / ↪ Refazer</strong></td>
+                    <td>Undo/redo de ações</td>
+                </tr>
+                <tr>
+                    <td><strong>🌐 Idioma</strong></td>
+                    <td>Alterna entre Português e Inglês</td>
+                </tr>
+            </table>
+
+            <!-- Painéis -->
+            <h2 id="paineis">Painéis</h2>
+            <div class="card-grid">
+                <div class="info-card">
+                    <h5 style="color:var(--v)"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                            <line x1="3" y1="9" x2="21" y2="9" />
+                        </svg> Sidebar (Esquerda)</h5>
+                    <p>Paleta de nós organizados em 5 categorias. Arraste qualquer nó para o canvas.</p>
+                </div>
+                <div class="info-card">
+                    <h5 style="color:var(--b)"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 20h9" />
+                            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                        </svg> Propriedades (Direita)</h5>
+                    <p>Configure o nó selecionado: URLs, prompts, condições, variáveis de saída e mais.</p>
+                </div>
+                <div class="info-card">
+                    <h5 style="color:var(--e)"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                        </svg> Logs (Inferior)</h5>
+                    <p>Logs em tempo real durante execução. Filtro por tipo, busca textual e exportação.</p>
+                </div>
+                <div class="info-card">
+                    <h5 style="color:var(--a)"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z" />
+                            <line x1="16" y1="8" x2="2" y2="22" />
+                            <line x1="17.5" y1="15" x2="9" y2="15" />
+                        </svg> Variáveis (Inferior)</h5>
+                    <p>Inspetor de todas as variáveis do contexto. Cards com tipo, valor e botão copiar.</p>
+                </div>
+            </div>
+
+            <!-- Atalhos -->
+            <h2 id="atalhos">Atalhos de Teclado</h2>
+            <table>
+                <tr>
+                    <th>Atalho</th>
+                    <th>Ação</th>
+                </tr>
+                <tr>
+                    <td><span class="shortcut">Ctrl+Z</span></td>
+                    <td>Desfazer</td>
+                </tr>
+                <tr>
+                    <td><span class="shortcut">Ctrl+Shift+Z</span></td>
+                    <td>Refazer</td>
+                </tr>
+                <tr>
+                    <td><span class="shortcut">Delete</span></td>
+                    <td>Apagar nó ou conexão selecionada</td>
+                </tr>
+                <tr>
+                    <td><span class="shortcut">Scroll</span></td>
+                    <td>Zoom in/out</td>
+                </tr>
+                <tr>
+                    <td><span class="shortcut">Clique + Arrastar</span></td>
+                    <td>Mover canvas (pan)</td>
+                </tr>
+            </table>
+
+            <!-- Catálogo de Nós -->
+            <h2 id="catalogo">Catálogo de Nós <span class="tag" style="background:rgba(139,92,246,.1);color:var(--v)">33
+                    tipos</span></h2>
+            <p>Nós organizados em 5 categorias:</p>
+            <div style="margin:12px 0 20px">
+                <span class="node-cat nc-green">Triggers (3)</span>
+                <span class="node-cat nc-blue">Actions (10)</span>
+                <span class="node-cat nc-amber">Logic (4)</span>
+                <span class="node-cat nc-violet">Data (9)</span>
+                <span class="node-cat nc-gray">Advanced (7)</span>
+            </div>
+
+            <h4>Triggers — Iniciam o fluxo</h4>
+            <table>
+                <tr>
+                    <th>Nó</th>
+                    <th>O que faz</th>
+                </tr>
+                <tr>
+                    <td><strong>Start</strong></td>
+                    <td>Ponto de início obrigatório. Todo fluxo começa aqui.</td>
+                </tr>
+                <tr>
+                    <td><strong>Webhook</strong></td>
+                    <td>Recebe requisições HTTP externas para iniciar o fluxo.</td>
+                </tr>
+                <tr>
+                    <td><strong>Cron</strong></td>
+                    <td>Executa automaticamente em intervalos (a cada minuto, hora, dia ou customizado).</td>
+                </tr>
+            </table>
+
+            <h4>Actions — Executam ações</h4>
+            <table>
+                <tr>
+                    <th>Nó</th>
+                    <th>O que faz</th>
+                </tr>
+                <tr>
+                    <td><strong>HTTP Request</strong></td>
+                    <td>Faz chamadas a APIs (GET, POST, PUT, DELETE, PATCH). Headers e body configuráveis.</td>
+                </tr>
+                <tr>
+                    <td><strong>AI Chat</strong></td>
+                    <td>Envia prompts para LLMs — Ollama (local), OpenAI ou Anthropic.</td>
+                </tr>
+                <tr>
+                    <td><strong>File Read</strong></td>
+                    <td>Lê o conteúdo de um arquivo do sistema.</td>
+                </tr>
+                <tr>
+                    <td><strong>File Write</strong></td>
+                    <td>Escreve ou adiciona conteúdo em um arquivo.</td>
+                </tr>
+                <tr>
+                    <td><strong>Debug Log</strong></td>
+                    <td>Imprime uma mensagem no painel de logs.</td>
+                </tr>
+                <tr>
+                    <td><strong>MySQL</strong></td>
+                    <td>Executa queries SQL em bancos MySQL.</td>
+                </tr>
+                <tr>
+                    <td><strong>PostgreSQL</strong></td>
+                    <td>Executa queries SQL em bancos PostgreSQL.</td>
+                </tr>
+                <tr>
+                    <td><strong>Notification</strong></td>
+                    <td>Envia notificações (toast, alert, console, som).</td>
+                </tr>
+                <tr>
+                    <td><strong>Delay</strong></td>
+                    <td>Pausa a execução por tempo definido (ms, segundos, minutos).</td>
+                </tr>
+                <tr>
+                    <td><strong>Wait</strong></td>
+                    <td>Espera por uma condição ou timeout.</td>
+                </tr>
+            </table>
+
+            <h4>Logic — Controle de fluxo</h4>
+            <table>
+                <tr>
+                    <th>Nó</th>
+                    <th>O que faz</th>
+                </tr>
+                <tr>
+                    <td><strong>If</strong></td>
+                    <td>Caminho condicional: saída <span style="color:#6ee7b7">True</span> ou <span
+                            style="color:#fca5a5">False</span> baseado numa expressão.</td>
+                </tr>
+                <tr>
+                    <td><strong>Switch</strong></td>
+                    <td>Multi-caminho: avalia um valor e segue o case correspondente (+ default).</td>
+                </tr>
+                <tr>
+                    <td><strong>Loop</strong></td>
+                    <td>Repetição: forEach, while, for, repeat. Saída "body" durante e "done" ao terminar.</td>
+                </tr>
+                <tr>
+                    <td><strong>Try/Catch</strong></td>
+                    <td>Tratamento de erros: saída "try" para sucesso e "catch" para erro.</td>
+                </tr>
+            </table>
+
+            <h4>Data — Transformação de dados</h4>
+            <table>
+                <tr>
+                    <th>Nó</th>
+                    <th>O que faz</th>
+                </tr>
+                <tr>
+                    <td><strong>Set Variable</strong></td>
+                    <td>Define variáveis que outros nós podem usar via <code>{{nome}}</code>.</td>
+                </tr>
+                <tr>
+                    <td><strong>Math</strong></td>
+                    <td>14 operações: soma, subtração, multiplicação, divisão, raiz, arredondamento, etc.</td>
+                </tr>
+                <tr>
+                    <td><strong>JSON</strong></td>
+                    <td>Parse (texto → objeto) e stringify (objeto → texto).</td>
+                </tr>
+                <tr>
+                    <td><strong>Array</strong></td>
+                    <td>map, filter, reduce, sort, push, find, length e mais.</td>
+                </tr>
+                <tr>
+                    <td><strong>String</strong></td>
+                    <td>uppercase, lowercase, trim, replace, split, join, slice, includes.</td>
+                </tr>
+                <tr>
+                    <td><strong>DateTime</strong></td>
+                    <td>now, format, parse, add/subtract, diff, compare.</td>
+                </tr>
+                <tr>
+                    <td><strong>Regex</strong></td>
+                    <td>match, replace, test, split com expressões regulares.</td>
+                </tr>
+                <tr>
+                    <td><strong>Template</strong></td>
+                    <td>Renderiza templates com variáveis dinâmicas.</td>
+                </tr>
+                <tr>
+                    <td><strong>Type Convert</strong></td>
+                    <td>Converte entre tipos: toString, toNumber, toBoolean, toJSON, toArray.</td>
+                </tr>
+            </table>
+
+            <h4>Advanced — Recursos avançados</h4>
+            <table>
+                <tr>
+                    <th>Nó</th>
+                    <th>O que faz</th>
+                </tr>
+                <tr>
+                    <td><strong>Code</strong></td>
+                    <td>Escreva JavaScript ou Rust customizado. Acesse variáveis do workflow.</td>
+                </tr>
+                <tr>
+                    <td><strong>Function</strong></td>
+                    <td>Defina funções reutilizáveis para reuso em outros nós.</td>
+                </tr>
+                <tr>
+                    <td><strong>Process Control</strong></td>
+                    <td>Liste, busque ou finalize processos do sistema operacional.</td>
+                </tr>
+                <tr>
+                    <td><strong>Merge</strong></td>
+                    <td>Combina dois fluxos de entrada em um só.</td>
+                </tr>
+                <tr>
+                    <td><strong>Sub-Workflow</strong></td>
+                    <td>Executa outro workflow como sub-rotina.</td>
+                </tr>
+                <tr>
+                    <td><strong>Comment</strong></td>
+                    <td>Nota visual no canvas — não executa nada, serve para documentar.</td>
+                </tr>
+            </table>
+
+            <!-- Variáveis -->
+            <h2 id="variaveis">Variáveis</h2>
+            <p>Variáveis permitem passar dados entre nós. Use a sintaxe <code>{{nome}}</code> em qualquer campo de
+                texto.</p>
+
+            <h3>Como usar</h3>
+            <ul>
+                <li>O nó <strong>Set Variable</strong> cria variáveis: defina nome e valor</li>
+                <li>Qualquer nó pode referenciar variáveis: <code>{{minha_variavel}}</code></li>
+                <li>Acesse saídas de nós anteriores: <code>{{$node["HTTP Request"].json.data}}</code></li>
+                <li>Variáveis especiais: <code>{{$now}}</code> retorna o timestamp atual</li>
+            </ul>
+
+            <h3>Autocompletar</h3>
+            <p>Ao digitar <code>{{</code> em qualquer campo, o editor mostra sugestões automáticas baseadas nos nós
+                anteriores do fluxo. Navegue com as setas ↑↓ e confirme com Enter.</p>
+
+            <div class="callout callout-v">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+                <span><strong>Dica:</strong> No painel de Variáveis, arraste o nome de qualquer variável diretamente
+                    para um campo de texto para inseri-la.</span>
+            </div>
+
+            <!-- Condições & Loops -->
+            <h2 id="condicoes">Condições & Loops</h2>
+
+            <h3>Nó If</h3>
+            <p>Avalia uma expressão e segue um de dois caminhos:</p>
+            <ul>
+                <li><strong>Campo 1:</strong> valor ou variável da esquerda (ex: <code>{{status}}</code>)</li>
+                <li><strong>Operador:</strong> equals, not equals, contains, greater than, less than, etc.</li>
+                <li><strong>Campo 2:</strong> valor de comparação (ex: <code>200</code>)</li>
+                <li>Saída <span style="color:#6ee7b7;font-weight:700">True</span> → segue um caminho</li>
+                <li>Saída <span style="color:#fca5a5;font-weight:700">False</span> → segue outro caminho</li>
+            </ul>
+
+            <h3>Nó Switch</h3>
+            <p>Funciona como um "if" com múltiplas opções. Defina uma expressão e crie N cases com valores. O fluxo
+                segue o case que corresponder (ou o default).</p>
+
+            <h3>Nó Loop</h3>
+            <p>Repete o caminho "body" N vezes. Quando termina, segue a saída "done".</p>
+            <ul>
+                <li><strong>forEach:</strong> itera sobre um array</li>
+                <li><strong>for:</strong> de X até Y com incremento</li>
+                <li><strong>while:</strong> enquanto condição for verdadeira</li>
+                <li><strong>repeat:</strong> repete N vezes</li>
+            </ul>
+
+            <!-- IA & Ollama -->
+            <h2 id="ia">IA & Ollama</h2>
+            <p>O nó <strong>AI Chat</strong> permite integrar LLMs diretamente nos seus fluxos.</p>
+
+            <h3>Usando Ollama (IA Local)</h3>
+            <ol class="steps">
+                <li>Instale o <a href="https://ollama.com" target="_blank">Ollama</a> e baixe um modelo:
+                    <code>ollama pull llama3</code></li>
+                <li>Inicie o Ollama: <code>ollama serve</code></li>
+                <li>No RustWorkflow, arraste o nó <strong>AI Chat</strong> para o canvas</li>
+                <li>No painel de propriedades, selecione Provider: <strong>Ollama</strong></li>
+                <li>O indicador ficará <span style="color:#6ee7b7;font-weight:600">● Conectado</span> e os modelos serão
+                    listados automaticamente</li>
+                <li>Escolha o modelo, escreva o prompt e configure a temperatura</li>
+            </ol>
+
+            <h3>Configurações</h3>
+            <table>
+                <tr>
+                    <th>Parâmetro</th>
+                    <th>Descrição</th>
+                </tr>
+                <tr>
+                    <td><strong>Provider</strong></td>
+                    <td>Ollama (local), OpenAI ou Anthropic</td>
+                </tr>
+                <tr>
+                    <td><strong>Modelo</strong></td>
+                    <td>Selecionado automaticamente do Ollama, ou manual para Cloud</td>
+                </tr>
+                <tr>
+                    <td><strong>System Prompt</strong></td>
+                    <td>Instrução de comportamento para o modelo</td>
+                </tr>
+                <tr>
+                    <td><strong>User Message</strong></td>
+                    <td>Mensagem enviada (aceita variáveis <code>{{var}}</code>)</td>
+                </tr>
+                <tr>
+                    <td><strong>Temperatura</strong></td>
+                    <td>0.0 (preciso) a 2.0 (criativo) — slider visual</td>
+                </tr>
+                <tr>
+                    <td><strong>Max Tokens</strong></td>
+                    <td>Limite de tokens na resposta</td>
+                </tr>
+                <tr>
+                    <td><strong>Top P</strong></td>
+                    <td>Controle de amostragem (0.0 a 1.0)</td>
+                </tr>
+                <tr>
+                    <td><strong>Repeat Penalty</strong></td>
+                    <td>Penalidade por repetição (0.0 a 2.0)</td>
+                </tr>
+            </table>
+
+            <div class="callout callout-rust">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4" />
+                    <circle cx="12" cy="12" r="4" />
+                </svg>
+                <span><strong>Performance:</strong> Ollama roda 100% localmente — sem enviar dados para nenhum servidor.
+                    Os requests incluem timeout de 60 segundos e retry automático.</span>
+            </div>
+
+            <!-- HTTP & APIs -->
+            <h2 id="http">HTTP & APIs</h2>
+            <p>O nó <strong>HTTP Request</strong> faz chamadas a qualquer API REST.</p>
+            <table>
+                <tr>
+                    <th>Campo</th>
+                    <th>Descrição</th>
+                </tr>
+                <tr>
+                    <td><strong>URL</strong></td>
+                    <td>Endereço da API (aceita variáveis)</td>
+                </tr>
+                <tr>
+                    <td><strong>Método</strong></td>
+                    <td>GET, POST, PUT, DELETE, PATCH</td>
+                </tr>
+                <tr>
+                    <td><strong>Headers</strong></td>
+                    <td>Cabeçalhos HTTP (lista de chave/valor)</td>
+                </tr>
+                <tr>
+                    <td><strong>Body</strong></td>
+                    <td>Corpo da requisição em JSON (para POST/PUT)</td>
+                </tr>
+                <tr>
+                    <td><strong>Variável de saída</strong></td>
+                    <td>Nome da variável que receberá a resposta</td>
+                </tr>
+            </table>
+            <p>A resposta fica disponível como variável para nós seguintes. Use
+                <code>{{$node["HTTP Request"].json}}</code> para acessar os dados retornados.</p>
+
+            <!-- Banco de Dados -->
+            <h2 id="db">Banco de Dados</h2>
+            <p>Nós <strong>MySQL</strong> e <strong>PostgreSQL</strong> executam queries SQL diretamente no fluxo.</p>
+            <table>
+                <tr>
+                    <th>Campo</th>
+                    <th>Descrição</th>
+                </tr>
+                <tr>
+                    <td><strong>Host / Porta</strong></td>
+                    <td>Endereço do servidor de banco de dados</td>
+                </tr>
+                <tr>
+                    <td><strong>Database</strong></td>
+                    <td>Nome do banco</td>
+                </tr>
+                <tr>
+                    <td><strong>Usuário / Senha</strong></td>
+                    <td>Credenciais de acesso</td>
+                </tr>
+                <tr>
+                    <td><strong>Query</strong></td>
+                    <td>Comando SQL (aceita variáveis <code>{{var}}</code>)</td>
+                </tr>
+                <tr>
+                    <td><strong>Operação</strong></td>
+                    <td>Query, Insert, Update ou Delete</td>
+                </tr>
+            </table>
+
+            <!-- Código Custom -->
+            <h2 id="codigo">Código Custom</h2>
+            <p>O nó <strong>Code</strong> permite executar lógica personalizada quando os nós padrão não são
+                suficientes.</p>
+            <h3>JavaScript</h3>
+            <p>Executa diretamente no navegador. Acesse variáveis do workflow e retorne dados:</p>
+            <ul>
+                <li>Acesso às variáveis do contexto de execução</li>
+                <li>Retorne um objeto JSON que será a saída do nó</li>
+                <li>Ideal para transformações de dados complexas</li>
+            </ul>
+
+            <h3>Rust</h3>
+            <p>Compila e executa código Rust nativo via Electron. Ideal para:</p>
+            <ul>
+                <li>Processamento de alta performance</li>
+                <li>Operações que precisam de segurança de memória</li>
+                <li>Integração com bibliotecas Rust</li>
+            </ul>
+
+            <div class="callout callout-a">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                <span><strong>Nota:</strong> Para executar código Rust, é necessário ter o Rust e Cargo instalados na
+                    máquina.</span>
+            </div>
+
+            <!-- Idiomas -->
+            <h2 id="idiomas">Idiomas</h2>
+            <p>O RustWorkflow suporta dois idiomas com troca instantânea:</p>
+            <ul>
+                <li>🇧🇷 <strong>Português (PT-BR)</strong></li>
+                <li>🇺🇸 <strong>Inglês (EN-US)</strong></li>
+            </ul>
+            <p>Clique no botão 🌐 na barra de ferramentas para alternar. A preferência é salva automaticamente e mantida
+                entre sessões.</p>
+
+            <!-- Salvar & Carregar -->
+            <h2 id="salvar">Salvar & Carregar Workflows</h2>
+            <p>Seus fluxos podem ser salvos e recarregados a qualquer momento:</p>
+            <ul>
+                <li><strong>Salvar:</strong> clique em 💾 e dê um nome ao workflow</li>
+                <li><strong>Carregar:</strong> clique em 📂 e escolha um workflow salvo</li>
+                <li><strong>Listar:</strong> veja todos os workflows salvos no seletor</li>
+                <li><strong>Excluir:</strong> remova workflows que não precisa mais</li>
+            </ul>
+            <p>Os workflows são armazenados localmente no seu computador.</p>
+
+            <!-- FAQ -->
+            <h2 id="faq">Perguntas Frequentes</h2>
+
+            <h3>O Ollama precisa estar rodando?</h3>
+            <p>Sim. O Ollama deve estar ativo (<code>ollama serve</code>) para que o nó AI Chat se conecte. Um indicador
+                de status mostra se a conexão está ativa.</p>
+
+            <h3>Posso usar sem internet?</h3>
+            <p>Sim, para a maioria das funcionalidades. IA local (Ollama), manipulação de arquivos, lógica e variáveis
+                funcionam 100% offline. Apenas nós de HTTP e cloud AI precisam de conexão.</p>
+
+            <h3>Os dados são enviados para algum servidor?</h3>
+            <p>Não. O RustWorkflow roda 100% na sua máquina. Dados de IA local ficam no seu computador. APIs cloud só
+                são utilizadas se você explicitamente configurar OpenAI ou Anthropic.</p>
+
+            <h3>Quantos nós posso ter em um fluxo?</h3>
+            <p>Não há limite definido. O editor suporta centenas de nós com zoom, pan e minimap para navegação.</p>
+
+            <h3>Posso executar fluxos automaticamente?</h3>
+            <p>Sim! Use o nó <strong>Cron</strong> para agendar execuções automáticas a cada minuto, hora, dia, ou em
+                intervalo customizado.</p>
+
+            <div class="callout callout-e" style="margin-top:40px">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                <span>RustWorkflow v1.0.0 — Documentação de uso.</span>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        const links = document.querySelectorAll('.sb-link');
+        const sections = document.querySelectorAll('h2[id]');
+        window.addEventListener('scroll', () => {
+            let c = '';
+            sections.forEach(s => { if (window.scrollY >= s.offsetTop - 100) c = s.id });
+            links.forEach(l => { l.classList.remove('active'); if (l.getAttribute('href') === '#' + c) l.classList.add('active') });
+        });
+    </script>
+</body>
+
+</html>

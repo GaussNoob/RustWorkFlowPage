@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RustWorkflow — Automação Visual Inteligente</title>
+    <meta name="description"
+        content="RustWorkflow: editor visual de automação com IA, motor Rust nativo e 33+ tipos de nós. Arraste, conecte e execute fluxos inteligentes.">
+    <link rel="icon" href="logo.png" type="image/png">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-void: #030305;
+            --bg: #08080c;
+            --bg-up: #0e0e14;
+            --bg-card: #131319;
+            --bg-card-h: #1a1a22;
+            --border: #1e1e28;
+            --border-h: #2e2e3d;
+            --t: #ededf4;
+            --t2: #8d8da3;
+            --t3: #55556a;
+            --v: #8b5cf6;
+            --b: #3b82f6;
+            --c: #22d3ee;
+            --e: #10b981;
+            --a: #f59e0b;
+            --r: #f43f5e;
+            --rust: #e07040;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg-void);
+            color: var(--t);
+            font-family: 'Inter', -apple-system, sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Ambient ── */
+        .ambient {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .ambient::before {
+            content: '';
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            top: -250px;
+            left: -150px;
+            background: conic-gradient(from 160deg, rgba(224, 112, 64, 0.1), rgba(139, 92, 246, 0.08), transparent 45%);
+            filter: blur(90px);
+            border-radius: 50%;
+            animation: orbit 50s linear infinite;
+        }
+
+        .ambient::after {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            bottom: -150px;
+            right: -100px;
+            background: conic-gradient(from 340deg, rgba(59, 130, 246, 0.08), rgba(16, 185, 129, 0.06), transparent 40%);
+            filter: blur(80px);
+            border-radius: 50%;
+            animation: orbit 65s linear infinite reverse;
+        }
+
+        @keyframes orbit {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .grain {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image: radial-gradient(rgba(139, 92, 246, 0.06) 1px, transparent 1px);
+            background-size: 28px 28px;
+            mask-image: radial-gradient(ellipse 65% 45% at 50% 35%, black, transparent);
+        }
+
+        .wrap {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Nav ── */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 12px 0;
+            background: rgba(3, 3, 5, 0.65);
+            backdrop-filter: blur(20px) saturate(150%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        nav .wrap {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            text-decoration: none;
+            color: var(--t);
+        }
+
+        .brand img {
+            width: 28px;
+            height: 28px;
+            border-radius: 7px;
+            filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.3));
+        }
+
+        .brand span {
+            font-weight: 800;
+            font-size: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .brand .rr {
+            color: var(--rust);
+        }
+
+        .nlinks {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+        }
+
+        .nlinks a {
+            color: var(--t2);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nlinks a:hover {
+            color: var(--t);
+        }
+
+        .nbtn {
+            padding: 7px 16px;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 8px;
+            background: var(--v);
+            color: #fff;
+            text-decoration: none;
+            letter-spacing: 0.3px;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .nbtn:hover {
+            background: #7c4fe0;
+            transform: translateY(-1px);
+        }
+
+        /* ── Hero ── */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 80px 0 40px;
+        }
+
+        .hero-in {
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 5px 14px;
+            margin-bottom: 28px;
+            background: rgba(224, 112, 64, 0.06);
+            border: 1px solid rgba(224, 112, 64, 0.12);
+            border-radius: 100px;
+            font-size: 11px;
+            color: var(--rust);
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            animation: fadeUp 0.6s 0.1s both;
+        }
+
+        .badge svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .hero h1 {
+            font-size: clamp(36px, 5.5vw, 68px);
+            font-weight: 900;
+            line-height: 1.06;
+            letter-spacing: -2px;
+            margin-bottom: 18px;
+            animation: fadeUp 0.6s 0.2s both;
+        }
+
+        .glow {
+            background: linear-gradient(135deg, var(--rust) 0%, var(--v) 45%, var(--c) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero .sub {
+            font-size: clamp(14px, 1.8vw, 17px);
+            color: var(--t2);
+            max-width: 500px;
+            margin: 0 auto 32px;
+            line-height: 1.75;
+            animation: fadeUp 0.6s 0.3s both;
+        }
+
+        .hero-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeUp 0.6s 0.4s both;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 13px 26px;
+            border-radius: 11px;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            font-family: inherit;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .btn-p {
+            background: linear-gradient(135deg, var(--v), var(--b));
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3), inset 0 1px rgba(255, 255, 255, 0.12);
+        }
+
+        .btn-p:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(139, 92, 246, 0.45);
+        }
+
+        .btn-g {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--t);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .btn-g:hover {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── Interactive Preview ── */
+        .preview {
+            margin-top: 48px;
+            animation: fadeUp 0.8s 0.6s both;
+        }
+
+        .preview-wrap {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(139, 92, 246, 0.04);
+        }
+
+        .preview-bar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.015);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .dot-r {
+            background: #ff5f57;
+        }
+
+        .dot-y {
+            background: #febc2e;
+        }
+
+        .dot-g {
+            background: #28c840;
+        }
+
+        .preview-bar span {
+            margin-left: 10px;
+            font-size: 11px;
+            color: var(--t3);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .canvas {
+            padding: 32px 24px;
+            min-height: 200px;
+            position: relative;
+            background-image: radial-gradient(rgba(139, 92, 246, 0.04) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .flow-demo {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .fnode {
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .fnode svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .fconn {
+            width: 32px;
+            height: 2px;
+            position: relative;
+            overflow: visible;
+        }
+
+        .fconn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--v), var(--b));
+            opacity: 0.3;
+        }
+
+        .fconn::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: 0;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--v);
+            box-shadow: 0 0 6px var(--v);
+            animation: flowPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes flowPulse {
+            0% {
+                left: 0;
+                opacity: 0;
+            }
+
+            20% {
+                opacity: 1;
+            }
+
+            80% {
+                opacity: 1;
+            }
+
+            100% {
+                left: 100%;
+                opacity: 0;
+            }
+        }
+
+        .fn-start {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+        }
+
+        .fn-http {
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+        }
+
+        .fn-ai {
+            background: rgba(139, 92, 246, 0.08);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            color: #c4b5fd;
+        }
+
+        .fn-if {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+        }
+
+        .fn-db {
+            background: rgba(34, 211, 238, 0.08);
+            border: 1px solid rgba(34, 211, 238, 0.2);
+            color: #67e8f9;
+        }
+
+        /* ── Stats ── */
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            padding: 44px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            margin: 48px 0 64px;
+            flex-wrap: wrap;
+        }
+
+        .st {
+            text-align: center;
+        }
+
+        .st-n {
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: -2px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .st-l {
+            font-size: 11px;
+            color: var(--t3);
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        /* ── Bento ── */
+        .bento {
+            padding: 40px 0 80px;
+        }
+
+        .bento-h {
+            text-align: center;
+            margin-bottom: 44px;
+        }
+
+        .label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--v);
+            margin-bottom: 10px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .bento-h h2 {
+            font-size: clamp(26px, 3.5vw, 40px);
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            margin-bottom: 10px;
+        }
+
+        .bento-h p {
+            font-size: 14px;
+            color: var(--t2);
+            max-width: 440px;
+            margin: 0 auto;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 10px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 26px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card:hover {
+            border-color: var(--border-h);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .card:hover::after {
+            opacity: 1;
+        }
+
+        .c7 {
+            grid-column: span 7;
+        }
+
+        .c5 {
+            grid-column: span 5;
+        }
+
+        .c4 {
+            grid-column: span 4;
+        }
+
+        .c8 {
+            grid-column: span 8;
+        }
+
+        .c6 {
+            grid-column: span 6;
+        }
+
+        .card-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 14px;
+        }
+
+        .card-icon svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .ci-rust {
+            background: rgba(224, 112, 64, 0.1);
+            border: 1px solid rgba(224, 112, 64, 0.1);
+            color: var(--rust);
+        }
+
+        .ci-v {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            color: var(--v);
+        }
+
+        .ci-b {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            color: var(--b);
+        }
+
+        .ci-e {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.1);
+            color: var(--e);
+        }
+
+        .ci-a {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.1);
+            color: var(--a);
+        }
+
+        .ci-c {
+            background: rgba(34, 211, 238, 0.1);
+            border: 1px solid rgba(34, 211, 238, 0.1);
+            color: var(--c);
+        }
+
+        .card.a-rust::after {
+            background: linear-gradient(90deg, var(--rust), transparent);
+        }
+
+        .card.a-v::after {
+            background: linear-gradient(90deg, var(--v), transparent);
+        }
+
+        .card.a-b::after {
+            background: linear-gradient(90deg, var(--b), transparent);
+        }
+
+        .card.a-e::after {
+            background: linear-gradient(90deg, var(--e), transparent);
+        }
+
+        .card.a-a::after {
+            background: linear-gradient(90deg, var(--a), transparent);
+        }
+
+        .card.a-c::after {
+            background: linear-gradient(90deg, var(--c), transparent);
+        }
+
+        .card h3 {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            letter-spacing: -0.2px;
+        }
+
+        .card p {
+            font-size: 12px;
+            color: var(--t2);
+            line-height: 1.65;
+        }
+
+        .codeblock {
+            margin-top: 14px;
+            padding: 12px 14px;
+            background: var(--bg-void);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            line-height: 1.8;
+            color: var(--t2);
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        .kw {
+            color: var(--v);
+        }
+
+        .fn {
+            color: var(--c);
+        }
+
+        .st {
+            color: var(--e);
+        }
+
+        .cm {
+            color: var(--t3);
+            font-style: italic;
+        }
+
+        .nu {
+            color: var(--a);
+        }
+
+        .rk {
+            color: var(--rust);
+        }
+
+        .mini-flow {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .mf-chip {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 9px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .mf-chip svg {
+            width: 10px;
+            height: 10px;
+        }
+
+        .mf-arr {
+            color: var(--t3);
+            font-size: 10px;
+        }
+
+        /* ── Download ── */
+        #download {
+            padding: 60px 0 100px;
+        }
+
+        .dl-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 48px 36px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dl-box::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 50% 0%, rgba(139, 92, 246, 0.06), transparent 55%),
+                radial-gradient(ellipse at 80% 100%, rgba(224, 112, 64, 0.04), transparent 45%);
+            pointer-events: none;
+        }
+
+        .dl-box>* {
+            position: relative;
+            z-index: 1;
+        }
+
+        .dl-top {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .dl-top h2 {
+            font-size: clamp(24px, 3vw, 34px);
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 8px;
+        }
+
+        .dl-top p {
+            font-size: 14px;
+            color: var(--t2);
+        }
+
+        .ver {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 3px 10px;
+            border-radius: 5px;
+            background: rgba(139, 92, 246, 0.08);
+            border: 1px solid rgba(139, 92, 246, 0.12);
+            font-size: 11px;
+            color: var(--v);
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .dl-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 14px;
+        }
+
+        .dl-c {
+            background: var(--bg-void);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 28px 22px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .dl-c:hover {
+            border-color: var(--v);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), 0 0 16px rgba(139, 92, 246, 0.06);
+        }
+
+        .dl-ico {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            margin: 0 auto 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(139, 92, 246, 0.05);
+            border: 1px solid var(--border);
+        }
+
+        .dl-ico svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .dl-c h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+
+        .dl-c .meta {
+            font-size: 11px;
+            color: var(--t3);
+            margin-bottom: 14px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .dbtn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            padding: 11px;
+            border-radius: 9px;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-family: inherit;
+            cursor: pointer;
+            border: none;
+        }
+
+        .dbtn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .dbtn-p {
+            background: linear-gradient(135deg, var(--v), var(--b));
+            color: #fff;
+            box-shadow: 0 2px 10px rgba(139, 92, 246, 0.2);
+        }
+
+        .dbtn-p:hover {
+            box-shadow: 0 4px 16px rgba(139, 92, 246, 0.35);
+        }
+
+        .dbtn-d {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--t2);
+            border: 1px solid var(--border);
+        }
+
+        .dl-note {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 11px;
+            color: var(--t3);
+        }
+
+        .dl-note code {
+            color: var(--v);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+        }
+
+        .techs {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 24px;
+        }
+
+        .tt {
+            padding: 5px 10px;
+            border-radius: 100px;
+            font-size: 10px;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid var(--border);
+            color: var(--t2);
+        }
+
+        /* ── Footer ── */
+        footer {
+            padding: 36px 0;
+            border-top: 1px solid var(--border);
+            position: relative;
+            z-index: 1;
+        }
+
+        footer .wrap {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        footer p {
+            font-size: 11px;
+            color: var(--t3);
+        }
+
+        .flinks {
+            display: flex;
+            gap: 18px;
+        }
+
+        .flinks a {
+            color: var(--t2);
+            text-decoration: none;
+            font-size: 11px;
+            transition: color 0.2s;
+        }
+
+        .flinks a:hover {
+            color: var(--v);
+        }
+
+        /* ── Reveal ── */
+        .rv {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .rv.v {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .c7,
+            .c5,
+            .c4,
+            .c8,
+            .c6 {
+                grid-column: span 1;
+            }
+
+            .flow-demo {
+                gap: 0;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .nlinks {
+                display: none;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero {
+                padding: 90px 0 30px;
+                min-height: auto;
+            }
+
+            .hero h1 {
+                letter-spacing: -1px;
+            }
+
+            .hero-btns {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .btn {
+                justify-content: center;
+            }
+
+            .stats {
+                gap: 20px;
+                padding: 28px 0;
+            }
+
+            .st-n {
+                font-size: 24px;
+            }
+
+            .dl-box {
+                padding: 32px 18px;
+            }
+
+            .dl-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .preview {
+                display: none;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .flow-demo {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="ambient"></div>
+    <div class="grain"></div>
+
+    <!-- Nav -->
+    <nav>
+        <div class="wrap">
+            <a href="#" class="brand">
+                <img src="logo.png" alt="RustWorkflow">
+                <span><span class="rr">Rust</span>Workflow</span>
+            </a>
+            <ul class="nlinks">
+                <li><a href="#features">Features</a></li>
+                <li><a href="docs.html">Docs</a></li>
+                <li><a href="#download">Download</a></li>
+            </ul>
+            <a href="#download" class="nbtn">
+                <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"
+                    style="display:inline;vertical-align:-1px">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Download
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-in">
+            <div class="badge">
+                <!-- Rust crab icon SVG -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                </svg>
+                rust + electron + react
+            </div>
+            <h1>Automação visual<br>com <span class="glow">inteligência</span></h1>
+            <p class="sub">
+                33 tipos de nós, IA integrada com Ollama, motor Rust nativo.
+                Arraste, conecte e execute fluxos complexos — sem código.
+            </p>
+            <div class="hero-btns">
+                <a href="#download" class="btn btn-p">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    Baixar RustWorkflow
+                </a>
+                <a href="#features" class="btn btn-g">Explorar features →</a>
+            </div>
+
+            <!-- Live Preview -->
+            <div class="preview">
+                <div class="preview-wrap">
+                    <div class="preview-bar">
+                        <div class="dot dot-r"></div>
+                        <div class="dot dot-y"></div>
+                        <div class="dot dot-g"></div>
+                        <span>rustworkflow — meu_fluxo.json</span>
+                    </div>
+                    <div class="canvas">
+                        <div class="flow-demo">
+                            <div class="fnode fn-start">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <polygon points="5 3 19 12 5 21 5 3" />
+                                </svg>
+                                Start
+                            </div>
+                            <div class="fconn" style="animation-delay:0s"></div>
+                            <div class="fnode fn-http">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="2" y1="12" x2="22" y2="12" />
+                                    <path
+                                        d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                                </svg>
+                                HTTP Request
+                            </div>
+                            <div class="fconn" style="animation-delay:0.4s"></div>
+                            <div class="fnode fn-ai">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path
+                                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                                AI Chat
+                            </div>
+                            <div class="fconn" style="animation-delay:0.8s"></div>
+                            <div class="fnode fn-if">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <polyline points="16 3 21 3 21 8" />
+                                    <line x1="4" y1="20" x2="21" y2="3" />
+                                    <polyline points="21 16 21 21 16 21" />
+                                    <line x1="15" y1="15" x2="21" y2="21" />
+                                    <line x1="4" y1="4" x2="9" y2="9" />
+                                </svg>
+                                Switch
+                            </div>
+                            <div class="fconn" style="animation-delay:1.2s"></div>
+                            <div class="fnode fn-db">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <ellipse cx="12" cy="5" rx="9" ry="3" />
+                                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+                                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+                                </svg>
+                                PostgreSQL
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats -->
+    <div class="wrap">
+        <div class="stats rv">
+            <div class="st">
+                <div class="st-n" style="color:var(--rust)">33+</div>
+                <div class="st-l">Tipos de nós</div>
+            </div>
+            <div class="st">
+                <div class="st-n" style="color:var(--v)">3</div>
+                <div class="st-l">Provedores de IA</div>
+            </div>
+            <div class="st">
+                <div class="st-n" style="color:var(--e)">2</div>
+                <div class="st-l">Engines (TS + Rust)</div>
+            </div>
+            <div class="st">
+                <div class="st-n" style="color:var(--c)">∞</div>
+                <div class="st-l">Possibilidades</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features -->
+    <section id="features" class="bento">
+        <div class="wrap">
+            <div class="bento-h rv">
+                <div class="label">// features</div>
+                <h2>Construído para<br>devs ambiciosos</h2>
+                <p>Cada detalhe pensado para produtividade e poder.</p>
+            </div>
+
+            <div class="grid">
+                <!-- AI – span 7 -->
+                <div class="card a-v c7 rv">
+                    <div class="card-icon ci-v">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path
+                                d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                        </svg>
+                    </div>
+                    <h3>IA Local com Ollama</h3>
+                    <p>Llama 3, Mistral, CodeGemma — sem API key. Listagem automática, chat com histórico, controle de
+                        temperatura, tokens e parâmetros avançados.</p>
+                    <div class="mini-flow">
+                        <span class="mf-chip"
+                            style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.12);color:#6ee7b7">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <polygon points="5 3 19 12 5 21 5 3" />
+                            </svg>
+                            Start
+                        </span>
+                        <span class="mf-arr">→</span>
+                        <span class="mf-chip"
+                            style="background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.12);color:#93c5fd">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <circle cx="12" cy="12" r="10" />
+                            </svg>
+                            Fetch
+                        </span>
+                        <span class="mf-arr">→</span>
+                        <span class="mf-chip"
+                            style="background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.12);color:#c4b5fd">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path d="M12 2l3 6.3L22 9.3l-5 4.8 1.2 6.9L12 17.8l-6.2 3.2L7 14.1 2 9.3l7-1L12 2z" />
+                            </svg>
+                            AI
+                        </span>
+                        <span class="mf-arr">→</span>
+                        <span class="mf-chip"
+                            style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.12);color:#fcd34d">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                            </svg>
+                            Output
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Rust Engine – span 5 -->
+                <div class="card a-rust c5 rv">
+                    <div class="card-icon ci-rust">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path
+                                d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" />
+                            <circle cx="12" cy="12" r="4" />
+                        </svg>
+                    </div>
+                    <h3>Motor Rust Nativo</h3>
+                    <p>Engine compilado em Rust para execução de alta performance via Electron.</p>
+                    <div class="codeblock"><span class="rk">use</span> serde_json::<span class="fn">Value</span>;
+                        <span class="rk">fn</span> <span class="fn">execute</span>(input: <span class="fn">Value</span>)
+                        {
+                        <span class="cm">// lógica nativa</span>
+                        }
+                    </div>
+                </div>
+
+                <!-- HTTP – span 4 -->
+                <div class="card a-b c4 rv">
+                    <div class="card-icon ci-b">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="2" y1="12" x2="22" y2="12" />
+                            <path
+                                d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                        </svg>
+                    </div>
+                    <h3>REST APIs</h3>
+                    <p>GET, POST, PUT, DELETE. Headers, body JSON, variáveis dinâmicas <code
+                            style="color:var(--c);font-size:11px">{{var}}</code>.</p>
+                </div>
+
+                <!-- Logic – span 4 -->
+                <div class="card a-a c4 rv">
+                    <div class="card-icon ci-a">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <polyline points="16 3 21 3 21 8" />
+                            <line x1="4" y1="20" x2="21" y2="3" />
+                            <polyline points="21 16 21 21 16 21" />
+                            <line x1="15" y1="15" x2="21" y2="21" />
+                            <line x1="4" y1="4" x2="9" y2="9" />
+                        </svg>
+                    </div>
+                    <h3>Lógica Visual</h3>
+                    <p>If/Else, Switch, Loop, Try/Catch — controle de fluxo completo com caminhos visuais.</p>
+                </div>
+
+                <!-- Database – span 4 -->
+                <div class="card a-c c4 rv">
+                    <div class="card-icon ci-c">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <ellipse cx="12" cy="5" rx="9" ry="3" />
+                            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+                            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+                        </svg>
+                    </div>
+                    <h3>MySQL & PostgreSQL</h3>
+                    <p>Queries diretas com resolução automática de variáveis. CRUD completo num nó.</p>
+                </div>
+
+                <!-- Code – span 6 -->
+                <div class="card a-e c6 rv">
+                    <div class="card-icon ci-e">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <polyline points="16 18 22 12 16 6" />
+                            <polyline points="8 6 2 12 8 18" />
+                        </svg>
+                    </div>
+                    <h3>JavaScript & Rust Code</h3>
+                    <p>Lógica customizada no browser (JS) ou compilada nativamente (Rust). Acesse variáveis do workflow.
+                    </p>
+                    <div class="codeblock"><span class="kw">const</span> r = data.<span class="fn">filter</span>(x =>
+                        x.score > <span class="nu">80</span>);
+                        <span class="kw">return</span> { <span class="st">count</span>: r.length };
+                    </div>
+                </div>
+
+                <!-- i18n – span 6 -->
+                <div class="card c6 rv" style="border-color: rgba(255,255,255,0.04);">
+                    <div class="card-icon"
+                        style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);color:var(--t2)">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="2" y1="12" x2="22" y2="12" />
+                            <path
+                                d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                        </svg>
+                    </div>
+                    <h3>Multi-idioma · Projeto Acadêmico</h3>
+                    <p>Interface em Português e Inglês com troca instantânea. Desenvolvido como TCC — código fechado por
+                        enquanto, com planos de ser aberto futuramente.</p>
+                    <div class="mini-flow" style="margin-top:10px">
+                        <span class="mf-chip"
+                            style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);color:var(--t2)">🇧🇷
+                            PT-BR</span>
+                        <span class="mf-chip"
+                            style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);color:var(--t2)">🇺🇸
+                            EN-US</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download -->
+    <section id="download">
+        <div class="wrap">
+            <div class="dl-box rv">
+                <div class="dl-top">
+                    <div class="label">// download</div>
+                    <h2>Pronto para começar?</h2>
+                    <p>Baixe e execute. Sem cadastro, sem limites.</p>
+                    <div class="ver">v1.0.0</div>
+                </div>
+
+                <div class="dl-grid">
+                    <!-- Linux -->
+                    <div class="dl-c">
+                        <div class="dl-ico" style="color: var(--a);">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+                                <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+                                <line x1="9" y1="9" x2="9.01" y2="9" stroke-width="3" stroke-linecap="round" />
+                                <line x1="15" y1="9" x2="15.01" y2="9" stroke-width="3" stroke-linecap="round" />
+                            </svg>
+                        </div>
+                        <h3>Linux</h3>
+                        <div class="meta"
+                            style="font-size:11px;color:var(--t3);margin-bottom:14px;font-family:'JetBrains Mono',monospace">
+                            AppImage · x64 · ~270MB</div>
+                        <a href="RustWorkflow-1.0.0.AppImage" download class="dbtn dbtn-p">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" y1="15" x2="12" y2="3" />
+                            </svg>
+                            Download .AppImage
+                        </a>
+                    </div>
+
+                    <!-- Windows -->
+                    <div class="dl-c">
+                        <div class="dl-ico" style="color: var(--b);">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <rect x="3" y="3" width="8" height="8" rx="1" />
+                                <rect x="13" y="3" width="8" height="8" rx="1" />
+                                <rect x="3" y="13" width="8" height="8" rx="1" />
+                                <rect x="13" y="13" width="8" height="8" rx="1" />
+                            </svg>
+                        </div>
+                        <h3>Windows</h3>
+                        <div class="meta"
+                            style="font-size:11px;color:var(--t3);margin-bottom:14px;font-family:'JetBrains Mono',monospace">
+                            Installer .exe · x64</div>
+                        <a href="RustWorkflow-1.0.0.exe" download class="dbtn dbtn-d"
+                            style="background: rgba(255, 255, 255, 0.05); color: white; border: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer;">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Download x64
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Nota importante sobre build no Windows 
+                <p class="dl-note">Para gerar o instalador Windows, execute <code>npm run electron:build</code> em uma
+                    máquina Windows.</p>
+                -->
+                <div class="techs">
+                    <span class="tt">React 19</span>
+                    <span class="tt">Next.js 16</span>
+                    <span class="tt">Electron 33</span>
+                    <span class="tt">Rust</span>
+                    <span class="tt">Ollama</span>
+                    <span class="tt">ReactFlow</span>
+                    <span class="tt">Tailwind CSS</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="wrap">
+            <p>© 2025 RustWorkflow · Projeto de Gauss</p>
+            <div class="flinks">
+                <a href="docs.html">Documentação</a>
+                <a href="#">Contato</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const o = new IntersectionObserver(es => {
+            es.forEach(e => { if (e.isIntersecting) e.target.classList.add('v'); });
+        }, { threshold: 0.12, rootMargin: '0px 0px -30px 0px' });
+        document.querySelectorAll('.rv').forEach(el => o.observe(el));
+        document.querySelectorAll('a[href^="#"]').forEach(a => {
+            a.addEventListener('click', e => {
+                e.preventDefault();
+                document.querySelector(a.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    </script>
+</body>
+
+</html>
